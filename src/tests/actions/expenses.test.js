@@ -4,6 +4,7 @@ import {
   startAddExpense,
   addExpense,
   editExpense,
+  startEditExpense,
   removeExpense,
   startRemoveExpense,
   setExpense,
@@ -64,6 +65,28 @@ test('should setup edit expense action object', () => {
       note: 'Pay gas bill'
     }
   });
+});
+
+test('should edit expense from firebase', (done) => {
+  const store = createMockStore({});
+  const id = expenses[1].id;
+  const updates = { amount: 22565 };
+
+  store
+    .dispatch(startEditExpense(id, updates))
+    .then(() => {
+      const actions = store.getActions();
+      expect(actions[0]).toEqual({
+        type: 'EDIT_EXPENSE',
+        id,
+        updates
+      });
+      return database.ref(`expenses/${id}`).once('value');
+    })
+    .then((snapshot) => {
+      expect(snapshot.val().amount).toBe(updates.amount);
+      done();
+    });
 });
 
 test('should setup add expense action object with provided value', () => {
